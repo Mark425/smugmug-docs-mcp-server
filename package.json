@@ -1,0 +1,20 @@
+{
+  "name": "smugmug-docs-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A TypeScript MCP server that wraps the SmugMug API reference docs over stdio.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.17.0",
+    "typescript": "^5.6.3"
+  }
+}
