@@ -3,7 +3,9 @@ import { isAbsolute, resolve } from "node:path";
 function parseSecrets(raw) {
     return {
         apiKey: raw.match(/smug\s*mug\s*api\s*key\s*[:=]\s*([^\s]+)/i)?.[1],
-        apiSecret: raw.match(/smug\s*mug\s*secret\s*[:=]\s*([^\s]+)/i)?.[1]
+        apiSecret: raw.match(/smug\s*mug\s*secret\s*[:=]\s*([^\s]+)/i)?.[1],
+        accessToken: raw.match(/smug\s*mug\s*access\s*token\s*[:=]\s*([^\s]+)/i)?.[1],
+        tokenSecret: raw.match(/smug\s*mug\s*token\s*secret\s*[:=]\s*([^\s]+)/i)?.[1]
     };
 }
 /**
@@ -30,20 +32,26 @@ function secretsFileCandidates() {
 export function loadSmugMugConfig() {
     const envKey = process.env.SMUGMUG_API_KEY?.trim();
     const envSecret = process.env.SMUGMUG_API_SECRET?.trim();
-    if (envKey || envSecret) {
+    const envAccessToken = process.env.SMUGMUG_ACCESS_TOKEN?.trim();
+    const envTokenSecret = process.env.SMUGMUG_TOKEN_SECRET?.trim();
+    if (envKey || envSecret || envAccessToken || envTokenSecret) {
         return {
             apiKey: envKey || undefined,
             apiSecret: envSecret || undefined,
+            accessToken: envAccessToken || undefined,
+            tokenSecret: envTokenSecret || undefined,
             source: "env"
         };
     }
     for (const path of secretsFileCandidates()) {
         try {
-            const { apiKey, apiSecret } = parseSecrets(readFileSync(path, "utf8"));
-            if (apiKey || apiSecret) {
+            const { apiKey, apiSecret, accessToken, tokenSecret } = parseSecrets(readFileSync(path, "utf8"));
+            if (apiKey || apiSecret || accessToken || tokenSecret) {
                 return {
                     apiKey,
                     apiSecret,
+                    accessToken,
+                    tokenSecret,
                     source: "file",
                     path
                 };

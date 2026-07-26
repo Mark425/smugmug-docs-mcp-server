@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test tests/oauth.test.ts",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts"
   },

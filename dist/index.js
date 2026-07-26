@@ -3,6 +3,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { fetchSmugMugDocPage, searchSmugMugDocs } from "./docs.js";
+import { createOAuthAuthorizationHeader } from "./oauth.js";
 import { loadSmugMugConfig } from "./secrets.js";
 const server = new Server({
     name: "smugmug-docs-mcp",
@@ -44,7 +45,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         {
             name: "smugmug_api_call",
-            description: "Call the live SmugMug API using credentials from secrets.txt when available.",
+            description: "Call the live SmugMug API using pre-authorized OAuth credentials.",
             inputSchema: {
                 type: "object",
                 properties: {
@@ -111,12 +112,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const path = typeof args.path === "string" ? args.path : "";
         const method = typeof args.method === "string" ? args.method.toUpperCase() : "GET";
         const params = typeof args.params === "object" && args.params ? args.params : {};
-        if (!config.apiKey || !config.apiSecret) {
+        if (!config.apiKey || !config.apiSecret || !config.accessToken || !config.tokenSecret) {
             return {
                 content: [
                     {
                         type: "text",
-                        text: "SmugMug credentials were not found. Add the API key and secret to secrets.txt in the working directory, or set SMUGMUG_SECRETS_FILE / SMUGMUG_WORKSPACE_ROOT to locate the file, or set SMUGMUG_API_KEY and SMUGMUG_API_SECRET directly."
+                        text: "Complete SmugMug OAuth credentials were not found. Add the API key, API secret, access token, and token secret to secrets.txt, or set SMUGMUG_SECRETS_FILE / SMUGMUG_WORKSPACE_ROOT to locate the file, or set SMUGMUG_API_KEY, SMUGMUG_API_SECRET, SMUGMUG_ACCESS_TOKEN, and SMUGMUG_TOKEN_SECRET directly."
                     }
                 ],
                 isError: true
@@ -131,8 +132,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 method,
                 headers: {
                     "Accept": "application/json",
-                    "X-SmugMug-API-Key": config.apiKey,
-                    "X-SmugMug-API-Secret": config.apiSecret
+                    "Authorization": createOAuthAuthorizationHeader(url, method, {
+                        consumerKey: config.apiKey,
+                        consumerSecret: config.apiSecret,
+                        accessToken: config.accessToken,
+                        tokenSecret: config.tokenSecret
+                    })
                 }
             });
             const text = await response.text();
@@ -146,7 +151,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                             body: text
                         }, null, 2)
                     }
-                ]
+                ],
+                isError: !response.ok
             };
         }
         catch (error) {
