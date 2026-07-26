@@ -17,6 +17,12 @@ No clone required — the package builds itself on install and exposes a binary:
 
     npx --yes --package=git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION smugmug-docs-mcp-server
 
+npx re-clones and rebuilds on every launch (~1 minute), which can exceed MCP client startup
+timeouts. For regular use install it once and run the binary directly:
+
+    npm install -g git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION
+    smugmug-docs-mcp-server
+
 ## Credentials
 Resolved in this order:
 1. SMUGMUG_API_KEY and SMUGMUG_API_SECRET

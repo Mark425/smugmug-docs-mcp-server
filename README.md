@@ -46,6 +46,18 @@ npx --yes --package=git+https://github.com/Mark425/smugmug-docs-mcp-server.git#R
 
 Pin `REVISION` to a specific commit so clients get a reproducible server.
 
+`npx` re-clones and rebuilds the package on every launch, which takes roughly a minute and will
+exceed the startup timeout of some MCP clients. For anything you start regularly, install it once
+instead and point the client at the resulting `smugmug-docs-mcp-server` binary:
+
+```bash
+npm install -g git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION
+```
+
+`typescript` and `@types/node` are runtime `dependencies` rather than `devDependencies` on purpose:
+`npm install -g` does not install devDependencies, so the `prepare` build would otherwise fail with
+`'tsc' is not recognized`.
+
 ## Credentials
 
 `smugmug_api_call` looks for credentials in the following order:
