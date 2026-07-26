@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -130,7 +131,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [
           {
             type: "text",
-            text: "SmugMug credentials were not found in secrets.txt. Add the API key and secret to the workspace secrets file first."
+            text: "SmugMug credentials were not found. Add the API key and secret to secrets.txt in the working directory, or set SMUGMUG_SECRETS_FILE / SMUGMUG_WORKSPACE_ROOT to locate the file, or set SMUGMUG_API_KEY and SMUGMUG_API_SECRET directly."
           }
         ],
         isError: true

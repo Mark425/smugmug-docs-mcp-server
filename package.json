@@ -4,8 +4,15 @@
   "private": true,
   "type": "module",
   "description": "A TypeScript MCP server that wraps the SmugMug API reference docs over stdio.",
+  "bin": {
+    "smugmug-docs-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts"
   },

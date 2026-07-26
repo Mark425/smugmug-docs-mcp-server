@@ -10,6 +10,10 @@ The server exposes three tools:
 - `fetch_smugmug_doc(input)` to fetch content for a docs page or docs path
 - `smugmug_api_call(path, method, params)` to call the live SmugMug API using the credentials in `secrets.txt`
 
+> **Known limitation:** `smugmug_api_call` sends credentials as `X-SmugMug-API-Key` and
+> `X-SmugMug-API-Secret` headers, but SmugMug API v2 expects OAuth 1.0a request signing. Live calls
+> may return `401` even when credentials are loaded correctly.
+
 ## Setup
 
 1. Install Node.js 20+.
@@ -30,6 +34,41 @@ npm run build
 ```bash
 npm start
 ```
+
+## Running it from another project
+
+The package exposes a `smugmug-docs-mcp-server` binary and builds itself on install, so any MCP
+client can launch it straight from GitHub without cloning:
+
+```bash
+npx --yes --package=git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION smugmug-docs-mcp-server
+```
+
+Pin `REVISION` to a specific commit so clients get a reproducible server.
+
+## Credentials
+
+`smugmug_api_call` looks for credentials in the following order:
+
+1. `SMUGMUG_API_KEY` and `SMUGMUG_API_SECRET` environment variables.
+2. The file named by `SMUGMUG_SECRETS_FILE`.
+3. `secrets.txt` inside the directory named by `SMUGMUG_WORKSPACE_ROOT`.
+4. `secrets.txt` in the current working directory.
+
+The secrets file uses this format:
+
+```text
+smug mug api key: YOUR_API_KEY
+smug mug secret: YOUR_API_SECRET
+```
+
+Prefer `SMUGMUG_SECRETS_FILE` over the `SMUGMUG_API_KEY` variables when configuring an MCP client:
+MCP configuration files are typically committed to a repository or stored in a shared user config,
+so keeping the credentials in an ignored secrets file avoids checking them in.
+
+Option 4 exists for backwards compatibility, but relying on it is fragile — MCP clients start the
+server with whatever working directory they choose, and some (such as GitHub Copilot CLI) provide no
+way to set it. Set `SMUGMUG_SECRETS_FILE` explicitly instead.
 
 ## How to use it in VS Code
 
@@ -59,12 +98,15 @@ Once connected, you can ask the agent to use tools such as:
 
 ### 4. Optional: use your credentials
 
-If you want the live API tool to work, place your SmugMug API key and secret in `secrets.txt` using this format:
+If you want the live API tool to work, place your SmugMug API key and secret in `secrets.txt` using
+this format:
 
 ```text
 smug mug api key: YOUR_API_KEY
 smug mug secret: YOUR_API_SECRET
 ```
+
+See [Credentials](#credentials) for the other supported locations.
 
 ## Example tool calls
 
