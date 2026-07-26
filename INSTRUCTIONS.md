@@ -13,15 +13,18 @@
 The workspace includes a VS Code MCP configuration in .vscode/mcp.json. After building the server, VS Code should be able to start it from the workspace.
 
 ## Use from another project
-No clone required — the package builds itself on install and exposes a binary:
+The compiled `dist/` is committed, so the package needs no build step on install and exposes a
+`smugmug-docs-mcp-server` binary.
 
     npx --yes --package=git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION smugmug-docs-mcp-server
 
-npx re-clones and rebuilds on every launch (~1 minute), which can exceed MCP client startup
+npx re-clones on every launch (about a minute), which can exceed MCP client startup
 timeouts. For regular use install it once and run the binary directly:
 
     npm install -g git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION
     smugmug-docs-mcp-server
+
+Run `npm run build` and commit `dist/` whenever you change `src/`.
 
 ## Credentials
 Resolved in this order:

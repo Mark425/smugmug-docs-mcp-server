@@ -37,7 +37,7 @@ npm start
 
 ## Running it from another project
 
-The package exposes a `smugmug-docs-mcp-server` binary and builds itself on install, so any MCP
+The package exposes a `smugmug-docs-mcp-server` binary and ships prebuilt output, so any MCP
 client can launch it straight from GitHub without cloning:
 
 ```bash
@@ -54,9 +54,10 @@ instead and point the client at the resulting `smugmug-docs-mcp-server` binary:
 npm install -g git+https://github.com/Mark425/smugmug-docs-mcp-server.git#REVISION
 ```
 
-`typescript` and `@types/node` are runtime `dependencies` rather than `devDependencies` on purpose:
-`npm install -g` does not install devDependencies, so the `prepare` build would otherwise fail with
-`'tsc' is not recognized`.
+`typescript` and `@types/node` stay in `devDependencies`, and `dist/` is committed to the repository
+rather than built on install. npm does not install a package's dependencies before running its
+`prepare` script during `npm install -g <git-url>`, so an install-time build cannot work for this
+distribution method. **Run `npm run build` and commit the result whenever you change `src/`.**
 
 ## Credentials
 
