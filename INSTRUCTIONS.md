@@ -28,12 +28,23 @@ Run `npm run build` and commit `dist/` whenever you change `src/`.
 
 ## Credentials
 Resolved in this order:
-1. SMUGMUG_API_KEY and SMUGMUG_API_SECRET
+1. SMUGMUG_API_KEY, SMUGMUG_API_SECRET, SMUGMUG_ACCESS_TOKEN, and SMUGMUG_TOKEN_SECRET
 2. the file named by SMUGMUG_SECRETS_FILE
 3. secrets.txt inside SMUGMUG_WORKSPACE_ROOT
 4. secrets.txt in the current working directory
 
 Prefer SMUGMUG_SECRETS_FILE in MCP client configs so credentials stay out of committed JSON.
+
+The secrets file must contain:
+
+    smug mug api key: YOUR_API_KEY
+    smug mug secret: YOUR_API_SECRET
+    smug mug access token: YOUR_ACCESS_TOKEN
+    smug mug token secret: YOUR_TOKEN_SECRET
+
+The access token and token secret are obtained through SmugMug's one-time OAuth 1.0a non-web
+authorization flow. The MCP server signs API requests with those credentials and does not open a
+browser or perform authorization interactively.
 
 ## Tools
 The server exposes three tools:

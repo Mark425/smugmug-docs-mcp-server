@@ -4,15 +4,24 @@ import { isAbsolute, resolve } from "node:path";
 export interface SmugMugConfig {
   apiKey?: string;
   apiSecret?: string;
+  accessToken?: string;
+  tokenSecret?: string;
   source: "file" | "env" | "none";
   /** The secrets file that was read, when `source` is `"file"`. */
   path?: string;
 }
 
-function parseSecrets(raw: string): { apiKey?: string; apiSecret?: string } {
+function parseSecrets(raw: string): {
+  apiKey?: string;
+  apiSecret?: string;
+  accessToken?: string;
+  tokenSecret?: string;
+} {
   return {
     apiKey: raw.match(/smug\s*mug\s*api\s*key\s*[:=]\s*([^\s]+)/i)?.[1],
-    apiSecret: raw.match(/smug\s*mug\s*secret\s*[:=]\s*([^\s]+)/i)?.[1]
+    apiSecret: raw.match(/smug\s*mug\s*secret\s*[:=]\s*([^\s]+)/i)?.[1],
+    accessToken: raw.match(/smug\s*mug\s*access\s*token\s*[:=]\s*([^\s]+)/i)?.[1],
+    tokenSecret: raw.match(/smug\s*mug\s*token\s*secret\s*[:=]\s*([^\s]+)/i)?.[1]
   };
 }
 
@@ -47,23 +56,31 @@ function secretsFileCandidates(): string[] {
 export function loadSmugMugConfig(): SmugMugConfig {
   const envKey = process.env.SMUGMUG_API_KEY?.trim();
   const envSecret = process.env.SMUGMUG_API_SECRET?.trim();
+  const envAccessToken = process.env.SMUGMUG_ACCESS_TOKEN?.trim();
+  const envTokenSecret = process.env.SMUGMUG_TOKEN_SECRET?.trim();
 
-  if (envKey || envSecret) {
+  if (envKey || envSecret || envAccessToken || envTokenSecret) {
     return {
       apiKey: envKey || undefined,
       apiSecret: envSecret || undefined,
+      accessToken: envAccessToken || undefined,
+      tokenSecret: envTokenSecret || undefined,
       source: "env"
     };
   }
 
   for (const path of secretsFileCandidates()) {
     try {
-      const { apiKey, apiSecret } = parseSecrets(readFileSync(path, "utf8"));
+      const { apiKey, apiSecret, accessToken, tokenSecret } = parseSecrets(
+        readFileSync(path, "utf8")
+      );
 
-      if (apiKey || apiSecret) {
+      if (apiKey || apiSecret || accessToken || tokenSecret) {
         return {
           apiKey,
           apiSecret,
+          accessToken,
+          tokenSecret,
           source: "file",
           path
         };

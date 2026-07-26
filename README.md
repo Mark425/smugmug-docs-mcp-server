@@ -8,11 +8,7 @@ The server exposes three tools:
 
 - `search_smugmug_docs(query)` to search a bundled catalog of SmugMug docs topics
 - `fetch_smugmug_doc(input)` to fetch content for a docs page or docs path
-- `smugmug_api_call(path, method, params)` to call the live SmugMug API using the credentials in `secrets.txt`
-
-> **Known limitation:** `smugmug_api_call` sends credentials as `X-SmugMug-API-Key` and
-> `X-SmugMug-API-Secret` headers, but SmugMug API v2 expects OAuth 1.0a request signing. Live calls
-> may return `401` even when credentials are loaded correctly.
+- `smugmug_api_call(path, method, params)` to call the live SmugMug API using pre-authorized OAuth credentials
 
 ## Setup
 
@@ -63,7 +59,8 @@ distribution method. **Run `npm run build` and commit the result whenever you ch
 
 `smugmug_api_call` looks for credentials in the following order:
 
-1. `SMUGMUG_API_KEY` and `SMUGMUG_API_SECRET` environment variables.
+1. `SMUGMUG_API_KEY`, `SMUGMUG_API_SECRET`, `SMUGMUG_ACCESS_TOKEN`, and
+   `SMUGMUG_TOKEN_SECRET` environment variables.
 2. The file named by `SMUGMUG_SECRETS_FILE`.
 3. `secrets.txt` inside the directory named by `SMUGMUG_WORKSPACE_ROOT`.
 4. `secrets.txt` in the current working directory.
@@ -73,15 +70,30 @@ The secrets file uses this format:
 ```text
 smug mug api key: YOUR_API_KEY
 smug mug secret: YOUR_API_SECRET
+smug mug access token: YOUR_ACCESS_TOKEN
+smug mug token secret: YOUR_TOKEN_SECRET
 ```
 
-Prefer `SMUGMUG_SECRETS_FILE` over the `SMUGMUG_API_KEY` variables when configuring an MCP client:
+The access token and token secret are obtained once through SmugMug's OAuth 1.0a non-web flow:
+
+1. Request a token from `https://api.smugmug.com/services/oauth/1.0a/getRequestToken` using your API key and secret.
+2. Open the returned authorization URL in a browser and authorize the application.
+3. Enter the six-digit verification code when requesting the access token from
+   `https://api.smugmug.com/services/oauth/1.0a/getAccessToken`.
+
+Access tokens do not expire unless revoked. The server uses them to sign each API request and does
+not perform the interactive authorization flow itself.
+
+Prefer `SMUGMUG_SECRETS_FILE` over the credential environment variables when configuring an MCP client:
 MCP configuration files are typically committed to a repository or stored in a shared user config,
 so keeping the credentials in an ignored secrets file avoids checking them in.
 
 Option 4 exists for backwards compatibility, but relying on it is fragile — MCP clients start the
 server with whatever working directory they choose, and some (such as GitHub Copilot CLI) provide no
 way to set it. Set `SMUGMUG_SECRETS_FILE` explicitly instead.
+
+For limited public-read endpoints, SmugMug also supports an `APIKey` query parameter. The live API
+tool does not add that parameter automatically; authenticated requests use OAuth.
 
 ## How to use it in VS Code
 
@@ -111,13 +123,8 @@ Once connected, you can ask the agent to use tools such as:
 
 ### 4. Optional: use your credentials
 
-If you want the live API tool to work, place your SmugMug API key and secret in `secrets.txt` using
-this format:
-
-```text
-smug mug api key: YOUR_API_KEY
-smug mug secret: YOUR_API_SECRET
-```
+If you want the live API tool to work, place the complete OAuth credential set in `secrets.txt` using
+the format shown in [Credentials](#credentials).
 
 See [Credentials](#credentials) for the other supported locations.
 
